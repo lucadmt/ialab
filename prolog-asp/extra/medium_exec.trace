@@ -1,0 +1,133 @@
+?- time(prova(Actions)), write(Actions).
+Value: 20
+MAIN: Deepness is: 20. Recursing...
+STEP: Found Leaf. F-Value: 36
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,10),tile(3,3,13),tile(4,3,0),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 38
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,0),tile(3,3,13),tile(4,3,9),tile(1,4,15),tile(2,4,10),tile(3,4,12),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 34
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,12),tile(3,3,10),tile(4,3,9),tile(1,4,15),tile(2,4,13),tile(3,4,0),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 40
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,5),tile(2,3,14),tile(3,3,10),tile(4,3,9),tile(1,4,15),tile(2,4,12),tile(3,4,13),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 42
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,6),tile(3,3,10),tile(4,3,9),tile(1,4,15),tile(2,4,12),tile(3,4,13),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 30
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,10),tile(2,3,9),tile(3,3,11),tile(4,3,0),tile(1,4,14),tile(2,4,15),tile(3,4,12),tile(4,4,13)]
+
+STEP: Found Leaf. F-Value: 32
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,9),tile(3,3,11),tile(4,3,13),tile(1,4,15),tile(2,4,10),tile(3,4,0),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 44
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,4),tile(1,2,6),tile(2,2,7),tile(3,2,3),tile(4,2,8),tile(1,3,5),tile(2,3,14),tile(3,3,10),tile(4,3,11),tile(1,4,15),tile(2,4,12),tile(3,4,9),tile(4,4,13)]
+
+STEP: Found Leaf. F-Value: 46
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,3),tile(1,2,5),tile(2,2,7),tile(3,2,8),tile(4,2,4),tile(1,3,14),tile(2,3,6),tile(3,3,10),tile(4,3,11),tile(1,4,15),tile(2,4,12),tile(3,4,9),tile(4,4,13)]
+
+STEP: Found Leaf. F-Value: 48
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,6),tile(4,2,13),tile(1,3,14),tile(2,3,10),tile(3,3,8),tile(4,3,7),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 50
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,8),tile(4,2,13),tile(1,3,14),tile(2,3,7),tile(3,3,6),tile(4,3,10),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 52
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,4),tile(1,2,5),tile(2,2,11),tile(3,2,3),tile(4,2,13),tile(1,3,14),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,15),tile(2,4,10),tile(3,4,12),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 54
+Config @depth0: [tile(1,1,1),tile(2,1,11),tile(3,1,2),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,3),tile(4,2,13),tile(1,3,15),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,10),tile(2,4,14),tile(3,4,12),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 28
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,13),tile(2,3,9),tile(3,3,11),tile(4,3,0),tile(1,4,15),tile(2,4,10),tile(3,4,14),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 56
+Config @depth0: [tile(1,1,2),tile(2,1,0),tile(3,1,3),tile(4,1,4),tile(1,2,1),tile(2,2,5),tile(3,2,14),tile(4,2,13),tile(1,3,15),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,10),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 58
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,13),tile(1,2,5),tile(2,2,8),tile(3,2,4),tile(4,2,3),tile(1,3,15),tile(2,3,7),tile(3,3,6),tile(4,3,14),tile(1,4,10),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 26
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,10),tile(2,3,9),tile(3,3,11),tile(4,3,0),tile(1,4,13),tile(2,4,15),tile(3,4,14),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 60
+Config @depth0: [tile(1,1,15),tile(2,1,1),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,2),tile(3,2,14),tile(4,2,11),tile(1,3,8),tile(2,3,5),tile(3,3,6),tile(4,3,13),tile(1,4,10),tile(2,4,12),tile(3,4,7),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 24
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,9),tile(2,3,10),tile(3,3,15),tile(4,3,11),tile(1,4,13),tile(2,4,14),tile(3,4,0),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 62
+Config @depth0: [tile(1,1,1),tile(2,1,8),tile(3,1,2),tile(4,1,11),tile(1,2,0),tile(2,2,5),tile(3,2,4),tile(4,2,14),tile(1,3,15),tile(2,3,7),tile(3,3,3),tile(4,3,13),tile(1,4,10),tile(2,4,12),tile(3,4,6),tile(4,4,9)]
+
+MAIN: Deepness: 20. Previous F: 1. Using new F: 24. Invoking myself...
+MAIN: Deepness is: 24. Recursing...
+STEP: Found Leaf. F-Value: 42
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,12),tile(3,3,10),tile(4,3,13),tile(1,4,15),tile(2,4,11),tile(3,4,0),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 44
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,15),tile(2,3,14),tile(3,3,10),tile(4,3,13),tile(1,4,0),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 46
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,5),tile(2,3,14),tile(3,3,10),tile(4,3,13),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 48
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,6),tile(3,3,10),tile(4,3,13),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 36
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,10),tile(2,3,13),tile(3,3,9),tile(4,3,0),tile(1,4,14),tile(2,4,15),tile(3,4,12),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 40
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,0),tile(4,2,8),tile(1,3,10),tile(2,3,13),tile(3,3,7),tile(4,3,9),tile(1,4,14),tile(2,4,15),tile(3,4,12),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 38
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,14),tile(2,3,13),tile(3,3,12),tile(4,3,0),tile(1,4,15),tile(2,4,10),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 50
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,3),tile(1,2,5),tile(2,2,7),tile(3,2,8),tile(4,2,4),tile(1,3,14),tile(2,3,6),tile(3,3,10),tile(4,3,9),tile(1,4,15),tile(2,4,12),tile(3,4,13),tile(4,4,11)]
+
+STEP: Found Leaf. F-Value: 34
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,10),tile(2,3,9),tile(3,3,11),tile(4,3,13),tile(1,4,0),tile(2,4,14),tile(3,4,15),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 52
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,7),tile(3,2,8),tile(4,2,11),tile(1,3,6),tile(2,3,5),tile(3,3,14),tile(4,3,10),tile(1,4,15),tile(2,4,12),tile(3,4,9),tile(4,4,13)]
+
+STEP: Found Leaf. F-Value: 54
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,8),tile(4,2,11),tile(1,3,14),tile(2,3,7),tile(3,3,6),tile(4,3,13),tile(1,4,15),tile(2,4,12),tile(3,4,10),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 56
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,10),tile(4,2,13),tile(1,3,14),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 58
+Config @depth0: [tile(1,1,1),tile(2,1,8),tile(3,1,2),tile(4,1,4),tile(1,2,0),tile(2,2,5),tile(3,2,3),tile(4,2,13),tile(1,3,14),tile(2,3,7),tile(3,3,6),tile(4,3,10),tile(1,4,15),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 32
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,15),tile(2,3,10),tile(3,3,9),tile(4,3,0),tile(1,4,13),tile(2,4,14),tile(3,4,11),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 30
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,9),tile(2,3,10),tile(3,3,11),tile(4,3,12),tile(1,4,14),tile(2,4,15),tile(3,4,0),tile(4,4,13)]
+
+STEP: Found Leaf. F-Value: 60
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,2),tile(4,1,13),tile(1,2,5),tile(2,2,11),tile(3,2,4),tile(4,2,3),tile(1,3,14),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,15),tile(2,4,10),tile(3,4,12),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 62
+Config @depth0: [tile(1,1,1),tile(2,1,11),tile(3,1,2),tile(4,1,13),tile(1,2,0),tile(2,2,5),tile(3,2,4),tile(4,2,3),tile(1,3,15),tile(2,3,8),tile(3,3,6),tile(4,3,7),tile(1,4,10),tile(2,4,14),tile(3,4,12),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 64
+Config @depth0: [tile(1,1,15),tile(2,1,1),tile(3,1,3),tile(4,1,4),tile(1,2,0),tile(2,2,2),tile(3,2,14),tile(4,2,13),tile(1,3,8),tile(2,3,5),tile(3,3,6),tile(4,3,7),tile(1,4,10),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 66
+Config @depth0: [tile(1,1,1),tile(2,1,8),tile(3,1,2),tile(4,1,13),tile(1,2,0),tile(2,2,5),tile(3,2,4),tile(4,2,14),tile(1,3,15),tile(2,3,7),tile(3,3,3),tile(4,3,6),tile(1,4,10),tile(2,4,12),tile(3,4,11),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 68
+Config @depth0: [tile(1,1,1),tile(2,1,0),tile(3,1,4),tile(4,1,11),tile(1,2,15),tile(2,2,3),tile(3,2,2),tile(4,2,14),tile(1,3,8),tile(2,3,5),tile(3,3,6),tile(4,3,13),tile(1,4,10),tile(2,4,12),tile(3,4,7),tile(4,4,9)]
+
+STEP: Found Leaf. F-Value: 28
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,9),tile(2,3,10),tile(3,3,15),tile(4,3,11),tile(1,4,13),tile(2,4,14),tile(3,4,0),tile(4,4,12)]
+
+STEP: Found Leaf. F-Value: 26
+Config @depth0: [tile(1,1,1),tile(2,1,2),tile(3,1,3),tile(4,1,4),tile(1,2,5),tile(2,2,6),tile(3,2,7),tile(4,2,8),tile(1,3,9),tile(2,3,10),tile(3,3,11),tile(4,3,0),tile(1,4,13),tile(2,4,14),tile(3,4,15),tile(4,4,12)]
+
+[action(tile(2,4,12),up),action(tile(3,4,9),left),action(tile(4,4,13),left),action(tile(4,3,11),down),action(tile(3,3,14),right),action(tile(2,3,12),right),action(tile(1,3,15),right),action(tile(1,4,10),up),action(tile(2,4,9),left),action(tile(3,4,13),left),action(tile(3,3,12),down),action(tile(4,3,14),left),action(tile(4,4,11),up),action(tile(3,4,12),right),action(tile(3,3,14),down),action(tile(2,3,15),right),action(tile(1,3,10),right),action(tile(1,4,9),up),action(tile(2,4,13),left),action(tile(3,4,14),left),action(tile(3,3,15),down),action(tile(4,3,11),left),action(tile(4,4,12),up)]
+% 328,418,813,052 inferences, 36671.909 CPU in 36669.757 seconds (100% CPU, 8955596 Lips)

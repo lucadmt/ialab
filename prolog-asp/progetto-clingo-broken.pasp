@@ -1,0 +1,46 @@
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,sit).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+1 {gioca(S,A,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(S,C).
+
+% La distanza tra una coppia di gare di andata e di ritorno è di almeno 10 giornate
+1 { gioca(A,S,C,N):citta(C),giornata(N),R=N-N1,|R| >= 1 } 1 :-
+    citta(C1),giornata(N1),squadra(A;S;S1;A1),
+    S<>A,S1<>A1,S1==A,A1==S,
+    afferisce(A,C),afferisce(S1,C1),
+    gioca(S1,A1,C1,N1).
+
+% Squadre diverse della stessa città non possono giocare nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+
+% per ogni squadra e giornata, conta gli avversari che la prima squadra deve affrontare.
+1 { incasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(S,C),gioca(S,A,C,G)}.
+% Ora, la stessa cosa, solo che devi contare i diversi principali
+1 { fuoricasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(A,C),gioca(A,S,C,G)}.
+
+:- squadra(S), giornata(G), incasa(S, G, PiC), fuoricasa(S, G, PfC), N = PiC + PfC, N > 2.
+
+#show gioca/4.

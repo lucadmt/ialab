@@ -1,0 +1,6 @@
+(load domain.clp)
+(load kb.clp)
+;; (watch facts)
+;; (watch activations)
+(reset)
+(run)

@@ -1,0 +1,447 @@
+#+TITLE: Progetto Clingo
+
+:PROPERTIES:
+:exports: both
+:results: output
+:tangle: no
+:END:
+
+Si richiede l’utilizzo del paradigma ASP (Answer Set Programming) per la generazione con clingo del calendario di una competizione sportiva, in particolare di un campionato avente le seguenti caratteristiche:
+
+- [ ] sono iscritte 20 squadre;
+- [ ] ogni squadra fa riferimento ad una città, che offre la struttura in cui la squadra gioca gli incontri in casa;
+- [ ] ci sono 3 derby, ossia 3 coppie di squadre che fanno riferimento alla medesima città.
+- [ ] il campionato prevede 38 giornate, 19 di andata e 19 di ritorno *NON* simmetriche, ossia la giornata 1 di ritorno non coincide necessariamente con la giornata 1 di andata a campi invertiti;
+- [ ] ogni squadra affronta due volte tutte le altre squadre, una volta in casa e una volta fuori casa, ossia una volta nella propria città di riferimento e una volta in quella dell’altra squadra;
+- [ ] due squadre della stessa città condividono la stessa struttura di gioco, quindi non possono giocare entrambe in casa nella stessa giornata;
+
+FACOLTATIVO: in aggiunta alle caratteristiche sopra indicate, da considerarsi obbligatorie, si richiede di considerare i seguenti vincoli ulteriori, che si potranno aggiungere (tutti o alcuni) a discrezione del gruppo nel caso non rendano privo di soluzione il problema:
+- [ ] ci sono 4 derby (invece di 3);
+- [ ]ciascuna squadra non deve giocare mai più di due partite consecutive in casa o fuori casa;
+- [ ]la distanza tra una coppia di gare di andata e ritorno è di almeno 10 giornate, ossia se SquadraA vs SquadraB è programmata per la giornata 12, il ritorno SquadraB vs SquadraA verrà schedulato non prima dalla giornata 22.
+
+** Modellare il dominio
+
+Anzitutto, dobbiamo modellare il dominio. Non sono un grande sportivo e non me ne intendo più di tanto, quindi per rimanere generali sia sullo sport che sulle squadre, le nomino con le lettere.
+Dal momento che non si dice quante città devono esserci obbligatoriamente, e dal momento che le nostre squadre sono fittizie, usiamo delle città fittizie, e ne usiamo la metà, così siamo nella situazione intermedia, senza sbilanciarci da nessuna delle due parti.
+Inoltre, dobbiamo stabilire quali città appartengono a quale squadra.
+
+#+BEGIN_SRC pasp
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;amet;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,amet).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+#+END_SRC
+
+Con questo, abbiamo completato:
+- [X] sono iscritte 20 squadre;
+- [X] ogni squadra fa riferimento ad una città, che offre la struttura in cui la squadra gioca gli incontri in casa;
+- [X] ci sono 3 derby, ossia 3 coppie di squadre che fanno riferimento alla medesima città.
+- [X] il campionato prevede 38 giornate, 19 di andata e 19 di ritorno *NON* simmetriche, ossia la giornata 1 di ritorno non coincide necessariamente con la giornata 1 di andata a campi invertiti;
+
+** Vincoli
+*** Ogni squadra affronta due volte tutte le altre squadre, una volta in casa e una fuori casa, ossia una volta nella propria città di riferimento e una volta in quella dell'altra squadra
+
+#+BEGIN_SRC pasp
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;amet;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,amet).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+%% Squadra S gioca in casa.
+1 {gioca(S,A,C,N):squadra(S),citta(C),giornata(N)} 1 :- squadra(A),S<>A,afferisce(S,C).
+%% Squadra S gioca fuori casa.
+1 {gioca(S,A,C,N):squadra(A),citta(C),giornata(N)} 1 :- squadra(S),S<>A,afferisce(A,C).
+
+#show gioca/4.
+#+END_SRC
+
+*** due squadre della stessa città condividono la stessa struttura di gioco, quindi non possono giocare entrambe in casa nella stessa giornata;
+
+#+name: clingores-samechk
+#+BEGIN_SRC pasp
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;amet;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,amet).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+%% Squadra S gioca in casa
+1 {gioca(S,A,C,N):squadra(S),citta(C),giornata(N)} 1 :- squadra(A),S<>A,afferisce(S,C).
+%% Squadra S gioca fuori casa.
+1 {gioca(S,A,C,N):squadra(A),citta(C),giornata(N)} 1 :- squadra(S),S<>A,afferisce(A,C).
+
+% Squadre diverse della stessa città non possono giocare nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+#show gioca/4.
+#+END_SRC
+
+Ho scritto un paio di funzioni python che possono aiutare:
+
+#+name: analyse_clingo_out
+#+header: :var clingores=clingores-samechk
+#+begin_src python :session analysis
+import ast
+import re
+
+def parse_clingores(crs):
+ totuples = crs.replace(' gioca', ',').replace('gioca', '')
+ res = re.sub(r"\(([a-z]),([a-z]),([a-z]*)", r"('\1','\2','\3'", totuples)
+ giocalst = ast.literal_eval(res)
+ return giocalst
+
+def count_cities(lst):
+ results = {
+  'lorem': 0,
+  'ipsum': 0,
+  'dolor': 0,
+  'sit': 0,
+  'amet': 0,
+  'consectetur': 0,
+  'adipiscing': 0,
+  'elit': 0,
+  'sed': 0,
+  'do': 0,
+  'eiusmod': 0,
+  'tempor': 0,
+  'incididunt': 0,
+  'ut': 0,
+  'labore': 0,
+  'et': 0,
+  'dolore': 0
+ }
+ for i in lst:
+  results[i[2]] += 1
+ return results
+
+def count_days(lst):
+ results = {1: 0,2: 0,3: 0,4: 0,5: 0,6: 0,7: 0,8: 0,9: 0,10: 0,11: 0,12: 0,13: 0,14: 0,15: 0,16: 0,17: 0,18: 0,19: 0,20: 0,21: 0,22: 0,23: 0,24: 0,25: 0,26: 0,27: 0,28: 0,29: 0,30: 0,31: 0,32: 0,33: 0,34: 0,35: 0,36: 0,37: 0,38: 0}
+ for i in lst:
+  results[i[3]] += 1
+ return results
+
+if (clingores != None):
+ gioca_lst = parse_clingores('[' + (" ".join(clingores[4])) + ']')
+ print("---- Conteggio partite raggruppate per città ----------")
+ print(count_cities(gioca_lst))
+ print()
+ print("---- Conteggio partite raggruppate per giornata ---------")
+ ncols = 5
+ padding = 1
+ sub_char = ' '
+ for (k, v) in count_days(gioca_lst).items():
+  def padval(val):
+   if val < 10:
+    return "{}{}".format(sub_char,sub_char) + str(val)
+   elif val >= 10 and val < 100:
+    return sub_char + str(val)
+   else:
+    return str(val)
+  if (k % ncols) != 0:
+   print("Day" + padval(k) + ": " + padval(v) + " partite", end="".join(["\t" for i in range(padding)]))
+  else:
+   print("Day" + padval(k) + ": " + padval(v) + " partite")
+
+ print('\n\n')
+ sums = 0
+ for i in count_days(gioca_lst).values():
+  sums += i
+ print("Total Games: {}".format(sums))
+else:
+ print("Can't work with NoneType, sorry")
+#+end_src
+
+#+name: whoplays_in_day
+#+header: :vars data=clingores-samechk day=1
+#+begin_src python :session analysis
+game_lst = parse_clingores(" ".join(data[4]))
+games_filtered = list(filter(lambda game: game[3] == day, game_lst))
+print(games_filtered)
+#+end_src
+
+Ora, immaginiamo che l'insieme risultato sia una lista di tuple, ognuna fatta così: ~('s','a','c',g)~. A questo punto, il risultato del conteggio sarà:
+
+#+call: analyse_clingo_out(clingores-samechk)
+
+#+RESULTS:
+#+begin_example
+---- Conteggio partite raggruppate per città ----------
+{'lorem': 74, 'ipsum': 74, 'dolor': 74, 'sit': 38, 'amet': 38, 'consectetur': 38, 'adipiscing': 38, 'elit': 38, 'sed': 38, 'do': 38, 'eiusmod': 38, 'tempor': 38, 'incididunt': 38, 'ut': 38, 'labore': 38, 'et': 38, 'dolore': 38}
+
+---- Conteggio partite raggruppate per giornata ---------
+Day  1: 317 partite	Day  2:   2 partite	Day  3:   4 partite	Day  4:   3 partite	Day  5:   4 partite
+Day  6:   3 partite	Day  7:   2 partite	Day  8:  10 partite	Day  9:   5 partite	Day 10:   6 partite
+Day 11:   6 partite	Day 12:  10 partite	Day 13:   7 partite	Day 14:   8 partite	Day 15:   6 partite
+Day 16:   7 partite	Day 17:   8 partite	Day 18:   6 partite	Day 19:  10 partite	Day 20:   6 partite
+Day 21:   9 partite	Day 22:   4 partite	Day 23:   6 partite	Day 24:   7 partite	Day 25:  10 partite
+Day 26:   8 partite	Day 27:   7 partite	Day 28:   8 partite	Day 29:   6 partite	Day 30:  10 partite
+Day 31:   5 partite	Day 32:  11 partite	Day 33:   6 partite	Day 34:   5 partite	Day 35:   3 partite
+Day 36:   5 partite	Day 37: 106 partite	Day 38: 108 partite
+
+
+Total Games: 754
+#+end_example
+
+#+call: whoplays_in_day(data=clingores-samechk, day=1)
+
+#+RESULTS:
+: [('d', 'a', 'sit', 1), ('d', 'b', 'sit', 1), ('d', 'c', 'sit', 1), ('d', 'e', 'sit', 1), ('d', 'f', 'sit', 1), ('d', 'g', 'sit', 1), ('d', 'h', 'sit', 1), ('d', 'i', 'sit', 1), ('d', 'j', 'sit', 1), ('d', 'k', 'sit', 1), ('d', 'l', 'sit', 1), ('d', 'm', 'sit', 1), ('d', 'n', 'sit', 1), ('d', 'o', 'sit', 1), ('d', 'p', 'sit', 1), ('d', 'q', 'sit', 1), ('d', 'r', 'sit', 1), ('d', 's', 'sit', 1), ('d', 't', 'sit', 1), ('q', 'a', 'amet', 1), ('q', 'b', 'amet', 1), ('q', 'c', 'amet', 1), ('q', 'd', 'amet', 1), ('q', 'e', 'amet', 1), ('q', 'f', 'amet', 1), ('q', 'g', 'amet', 1), ('q', 'h', 'amet', 1), ('q', 'i', 'amet', 1), ('q', 'j', 'amet', 1), ('q', 'k', 'amet', 1), ('q', 'l', 'amet', 1), ('q', 'm', 'amet', 1), ('q', 'n', 'amet', 1), ('q', 'o', 'amet', 1), ('q', 'p', 'amet', 1), ('q', 'r', 'amet', 1), ('q', 's', 'amet', 1), ('q', 't', 'amet', 1), ('e', 'a', 'consectetur', 1), ('e', 'b', 'consectetur', 1), ('e', 'c', 'consectetur', 1), ('e', 'd', 'consectetur', 1), ('e', 'f', 'consectetur', 1), ('e', 'g', 'consectetur', 1), ('e', 'h', 'consectetur', 1), ('e', 'i', 'consectetur', 1), ('e', 'j', 'consectetur', 1), ('e', 'k', 'consectetur', 1), ('e', 'l', 'consectetur', 1), ('e', 'm', 'consectetur', 1), ('e', 'n', 'consectetur', 1), ('e', 'o', 'consectetur', 1), ('e', 'p', 'consectetur', 1), ('e', 'q', 'consectetur', 1), ('e', 'r', 'consectetur', 1), ('e', 's', 'consectetur', 1), ('e', 't', 'consectetur', 1), ('p', 'a', 'adipiscing', 1), ('p', 'b', 'adipiscing', 1), ('p', 'c', 'adipiscing', 1), ('p', 'd', 'adipiscing', 1), ('p', 'e', 'adipiscing', 1), ('p', 'f', 'adipiscing', 1), ('p', 'g', 'adipiscing', 1), ('p', 'h', 'adipiscing', 1), ('p', 'i', 'adipiscing', 1), ('p', 'j', 'adipiscing', 1), ('p', 'k', 'adipiscing', 1), ('p', 'l', 'adipiscing', 1), ('p', 'm', 'adipiscing', 1), ('p', 'n', 'adipiscing', 1), ('p', 'o', 'adipiscing', 1), ('p', 'q', 'adipiscing', 1), ('p', 'r', 'adipiscing', 1), ('p', 's', 'adipiscing', 1), ('p', 't', 'adipiscing', 1), ('f', 'a', 'elit', 1), ('f', 'b', 'elit', 1), ('f', 'c', 'elit', 1), ('f', 'd', 'elit', 1), ('f', 'e', 'elit', 1), ('f', 'g', 'elit', 1), ('f', 'h', 'elit', 1), ('f', 'i', 'elit', 1), ('f', 'j', 'elit', 1), ('f', 'k', 'elit', 1), ('f', 'l', 'elit', 1), ('f', 'm', 'elit', 1), ('f', 'n', 'elit', 1), ('f', 'o', 'elit', 1), ('f', 'p', 'elit', 1), ('f', 'q', 'elit', 1), ('f', 'r', 'elit', 1), ('f', 's', 'elit', 1), ('f', 't', 'elit', 1), ('o', 'a', 'sed', 1), ('o', 'b', 'sed', 1), ('o', 'c', 'sed', 1), ('o', 'd', 'sed', 1), ('o', 'e', 'sed', 1), ('o', 'f', 'sed', 1), ('o', 'g', 'sed', 1), ('o', 'h', 'sed', 1), ('o', 'i', 'sed', 1), ('o', 'j', 'sed', 1), ('o', 'k', 'sed', 1), ('o', 'l', 'sed', 1), ('o', 'm', 'sed', 1), ('o', 'n', 'sed', 1), ('o', 'p', 'sed', 1), ('o', 'q', 'sed', 1), ('o', 'r', 'sed', 1), ('o', 's', 'sed', 1), ('o', 't', 'sed', 1), ('g', 'a', 'do', 1), ('g', 'b', 'do', 1), ('g', 'c', 'do', 1), ('g', 'd', 'do', 1), ('g', 'e', 'do', 1), ('g', 'f', 'do', 1), ('g', 'h', 'do', 1), ('g', 'i', 'do', 1), ('g', 'j', 'do', 1), ('g', 'k', 'do', 1), ('g', 'l', 'do', 1), ('g', 'm', 'do', 1), ('g', 'n', 'do', 1), ('g', 'o', 'do', 1), ('g', 'p', 'do', 1), ('g', 'q', 'do', 1), ('g', 'r', 'do', 1), ('g', 's', 'do', 1), ('g', 't', 'do', 1), ('n', 'a', 'eiusmod', 1), ('n', 'b', 'eiusmod', 1), ('n', 'c', 'eiusmod', 1), ('n', 'd', 'eiusmod', 1), ('n', 'e', 'eiusmod', 1), ('n', 'f', 'eiusmod', 1), ('n', 'g', 'eiusmod', 1), ('n', 'h', 'eiusmod', 1), ('n', 'i', 'eiusmod', 1), ('n', 'j', 'eiusmod', 1), ('n', 'k', 'eiusmod', 1), ('n', 'l', 'eiusmod', 1), ('n', 'm', 'eiusmod', 1), ('n', 'o', 'eiusmod', 1), ('n', 'p', 'eiusmod', 1), ('n', 'q', 'eiusmod', 1), ('n', 'r', 'eiusmod', 1), ('n', 's', 'eiusmod', 1), ('n', 't', 'eiusmod', 1), ('h', 'a', 'tempor', 1), ('h', 'b', 'tempor', 1), ('h', 'c', 'tempor', 1), ('h', 'd', 'tempor', 1), ('h', 'e', 'tempor', 1), ('h', 'f', 'tempor', 1), ('h', 'g', 'tempor', 1), ('h', 'i', 'tempor', 1), ('h', 'j', 'tempor', 1), ('h', 'k', 'tempor', 1), ('h', 'l', 'tempor', 1), ('h', 'm', 'tempor', 1), ('h', 'n', 'tempor', 1), ('h', 'o', 'tempor', 1), ('h', 'p', 'tempor', 1), ('h', 'q', 'tempor', 1), ('h', 'r', 'tempor', 1), ('h', 's', 'tempor', 1), ('h', 't', 'tempor', 1), ('m', 'a', 'incididunt', 1), ('m', 'b', 'incididunt', 1), ('m', 'c', 'incididunt', 1), ('m', 'd', 'incididunt', 1), ('m', 'e', 'incididunt', 1), ('m', 'f', 'incididunt', 1), ('m', 'g', 'incididunt', 1), ('m', 'h', 'incididunt', 1), ('m', 'i', 'incididunt', 1), ('m', 'j', 'incididunt', 1), ('m', 'k', 'incididunt', 1), ('m', 'l', 'incididunt', 1), ('m', 'n', 'incididunt', 1), ('m', 'o', 'incididunt', 1), ('m', 'p', 'incididunt', 1), ('m', 'q', 'incididunt', 1), ('m', 'r', 'incididunt', 1), ('m', 's', 'incididunt', 1), ('m', 't', 'incididunt', 1), ('i', 'a', 'ut', 1), ('i', 'b', 'ut', 1), ('i', 'c', 'ut', 1), ('i', 'd', 'ut', 1), ('i', 'e', 'ut', 1), ('i', 'f', 'ut', 1), ('i', 'g', 'ut', 1), ('i', 'h', 'ut', 1), ('i', 'j', 'ut', 1), ('i', 'k', 'ut', 1), ('i', 'l', 'ut', 1), ('i', 'm', 'ut', 1), ('i', 'n', 'ut', 1), ('i', 'o', 'ut', 1), ('i', 'p', 'ut', 1), ('i', 'q', 'ut', 1), ('i', 'r', 'ut', 1), ('i', 's', 'ut', 1), ('i', 't', 'ut', 1), ('l', 'a', 'labore', 1), ('l', 'b', 'labore', 1), ('l', 'c', 'labore', 1), ('l', 'd', 'labore', 1), ('l', 'e', 'labore', 1), ('l', 'f', 'labore', 1), ('l', 'g', 'labore', 1), ('l', 'h', 'labore', 1), ('l', 'i', 'labore', 1), ('l', 'j', 'labore', 1), ('l', 'k', 'labore', 1), ('l', 'm', 'labore', 1), ('l', 'n', 'labore', 1), ('l', 'o', 'labore', 1), ('l', 'p', 'labore', 1), ('l', 'q', 'labore', 1), ('l', 'r', 'labore', 1), ('l', 's', 'labore', 1), ('l', 't', 'labore', 1), ('j', 'a', 'et', 1), ('j', 'b', 'et', 1), ('j', 'c', 'et', 1), ('j', 'd', 'et', 1), ('j', 'e', 'et', 1), ('j', 'f', 'et', 1), ('j', 'g', 'et', 1), ('j', 'h', 'et', 1), ('j', 'i', 'et', 1), ('j', 'k', 'et', 1), ('j', 'l', 'et', 1), ('j', 'm', 'et', 1), ('j', 'n', 'et', 1), ('j', 'o', 'et', 1), ('j', 'p', 'et', 1), ('j', 'q', 'et', 1), ('j', 'r', 'et', 1), ('j', 's', 'et', 1), ('j', 't', 'et', 1), ('k', 'a', 'dolore', 1), ('k', 'b', 'dolore', 1), ('k', 'c', 'dolore', 1), ('k', 'd', 'dolore', 1), ('k', 'e', 'dolore', 1), ('k', 'f', 'dolore', 1), ('k', 'g', 'dolore', 1), ('k', 'h', 'dolore', 1), ('k', 'i', 'dolore', 1), ('k', 'j', 'dolore', 1), ('k', 'l', 'dolore', 1), ('k', 'm', 'dolore', 1), ('k', 'n', 'dolore', 1), ('k', 'o', 'dolore', 1), ('k', 'p', 'dolore', 1), ('k', 'q', 'dolore', 1), ('k', 'r', 'dolore', 1), ('k', 's', 'dolore', 1), ('k', 't', 'dolore', 1), ('a', 'd', 'sit', 1), ('b', 'd', 'sit', 1), ('c', 'd', 'sit', 1), ('e', 'd', 'sit', 1), ('f', 'd', 'sit', 1), ('g', 'd', 'sit', 1), ('h', 'd', 'sit', 1), ('i', 'd', 'sit', 1), ('j', 'd', 'sit', 1), ('k', 'd', 'sit', 1), ('l', 'd', 'sit', 1), ('m', 'd', 'sit', 1), ('n', 'd', 'sit', 1), ('o', 'd', 'sit', 1), ('p', 'd', 'sit', 1), ('q', 'd', 'sit', 1), ('r', 'd', 'sit', 1), ('s', 'd', 'sit', 1), ('t', 'd', 'sit', 1), ('a', 'q', 'amet', 1), ('b', 'q', 'amet', 1), ('c', 'q', 'amet', 1), ('d', 'q', 'amet', 1), ('e', 'q', 'amet', 1), ('f', 'q', 'amet', 1), ('g', 'q', 'amet', 1), ('h', 'q', 'amet', 1), ('i', 'q', 'amet', 1), ('j', 'q', 'amet', 1), ('k', 'q', 'amet', 1), ('l', 'q', 'amet', 1), ('m', 'q', 'amet', 1), ('n', 'q', 'amet', 1), ('o', 'q', 'amet', 1), ('p', 'q', 'amet', 1), ('r', 'q', 'amet', 1), ('s', 'q', 'amet', 1), ('t', 'q', 'amet', 1), ('a', 'e', 'consectetur', 1), ('b', 'e', 'consectetur', 1), ('c', 'e', 'consectetur', 1), ('d', 'e', 'consectetur', 1), ('f', 'e', 'consectetur', 1), ('g', 'e', 'consectetur', 1), ('j', 'p', 'adipiscing', 1), ('o', 'p', 'adipiscing', 1), ('d', 'o', 'sed', 1), ('c', 'n', 'eiusmod', 1), ('l', 'h', 'tempor', 1), ('k', 'i', 'ut', 1), ('p', 'k', 'dolore', 1)]
+
+È sicuramente una soluzione, ma una cosa un po'scomoda è che la maggior parte delle partite sono concentrate nella prima e nelle ultime 2 giornate.
+
+** Vincoli facoltativi
+
+*** Ci sono 4 derby
+
+#+name: clingores-samechk-4db
+#+BEGIN_SRC pasp
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,sit).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+1 {gioca(S,A,C,N):squadra(S),citta(C),giornata(N)} 1 :- squadra(A),S<>A,afferisce(S,C).
+1 {gioca(S,A,C,N):squadra(A),citta(C),giornata(N)} 1 :- squadra(S),S<>A,afferisce(A,C).
+
+% Squadre diverse della stessa città non possono giocare nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+#show gioca/4.
+#+END_SRC
+
+#+call: analyse_clingo_out(clingores-samechk-4db)
+
+#+RESULTS:
+#+begin_example
+---- Conteggio partite raggruppate per città ----------
+{'lorem': 74, 'ipsum': 74, 'dolor': 74, 'sit': 74, 'amet': 0, 'consectetur': 38, 'adipiscing': 38, 'elit': 38, 'sed': 38, 'do': 38, 'eiusmod': 38, 'tempor': 38, 'incididunt': 38, 'ut': 38, 'labore': 38, 'et': 38, 'dolore': 38}
+
+---- Conteggio partite raggruppate per giornata ---------
+Day  1: 168 partite	Day  2:   3 partite	Day  3:   5 partite	Day  4:   8 partite	Day  5:   3 partite
+Day  6:   5 partite	Day  7:   5 partite	Day  8:   8 partite	Day  9:  10 partite	Day 10:   7 partite
+Day 11:  12 partite	Day 12:   9 partite	Day 13:  11 partite	Day 14:  11 partite	Day 15:   6 partite
+Day 16:  10 partite	Day 17:  13 partite	Day 18:   7 partite	Day 19:   9 partite	Day 20:  11 partite
+Day 21:   9 partite	Day 22:   9 partite	Day 23:   5 partite	Day 24:  14 partite	Day 25:  10 partite
+Day 26:   8 partite	Day 27:  10 partite	Day 28:  10 partite	Day 29:  10 partite	Day 30:  12 partite
+Day 31:  10 partite	Day 32:  11 partite	Day 33:   6 partite	Day 34:   8 partite	Day 35:   4 partite
+Day 36:   5 partite	Day 37: 144 partite	Day 38: 146 partite
+
+
+Total Games: 752
+#+end_example
+
+#+call: whoplays_in_day(data=clingores-samechk-4db, day=1)
+
+#+RESULTS:
+: [('e', 'a', 'consectetur', 1), ('e', 'b', 'consectetur', 1), ('e', 'c', 'consectetur', 1), ('e', 'd', 'consectetur', 1), ('e', 'f', 'consectetur', 1), ('e', 'g', 'consectetur', 1), ('e', 'h', 'consectetur', 1), ('e', 'i', 'consectetur', 1), ('e', 'j', 'consectetur', 1), ('e', 'k', 'consectetur', 1), ('e', 'l', 'consectetur', 1), ('e', 'm', 'consectetur', 1), ('e', 'n', 'consectetur', 1), ('e', 'o', 'consectetur', 1), ('e', 'p', 'consectetur', 1), ('e', 'q', 'consectetur', 1), ('e', 'r', 'consectetur', 1), ('e', 's', 'consectetur', 1), ('e', 't', 'consectetur', 1), ('p', 'a', 'adipiscing', 1), ('p', 'b', 'adipiscing', 1), ('p', 'c', 'adipiscing', 1), ('p', 'd', 'adipiscing', 1), ('p', 'e', 'adipiscing', 1), ('p', 'f', 'adipiscing', 1), ('p', 'g', 'adipiscing', 1), ('p', 'h', 'adipiscing', 1), ('p', 'i', 'adipiscing', 1), ('p', 'j', 'adipiscing', 1), ('p', 'k', 'adipiscing', 1), ('p', 'l', 'adipiscing', 1), ('p', 'm', 'adipiscing', 1), ('p', 'n', 'adipiscing', 1), ('p', 'o', 'adipiscing', 1), ('p', 'q', 'adipiscing', 1), ('p', 'r', 'adipiscing', 1), ('p', 's', 'adipiscing', 1), ('p', 't', 'adipiscing', 1), ('f', 'a', 'elit', 1), ('f', 'b', 'elit', 1), ('f', 'c', 'elit', 1), ('f', 'd', 'elit', 1), ('f', 'e', 'elit', 1), ('f', 'g', 'elit', 1), ('f', 'h', 'elit', 1), ('f', 'i', 'elit', 1), ('f', 'j', 'elit', 1), ('f', 'k', 'elit', 1), ('f', 'l', 'elit', 1), ('f', 'm', 'elit', 1), ('f', 'n', 'elit', 1), ('f', 'o', 'elit', 1), ('f', 'p', 'elit', 1), ('f', 'q', 'elit', 1), ('f', 'r', 'elit', 1), ('f', 's', 'elit', 1), ('f', 't', 'elit', 1), ('o', 'a', 'sed', 1), ('o', 'b', 'sed', 1), ('o', 'c', 'sed', 1), ('o', 'd', 'sed', 1), ('o', 'e', 'sed', 1), ('o', 'f', 'sed', 1), ('o', 'g', 'sed', 1), ('o', 'h', 'sed', 1), ('o', 'i', 'sed', 1), ('o', 'j', 'sed', 1), ('o', 'k', 'sed', 1), ('o', 'l', 'sed', 1), ('o', 'm', 'sed', 1), ('o', 'n', 'sed', 1), ('o', 'p', 'sed', 1), ('o', 'q', 'sed', 1), ('o', 'r', 'sed', 1), ('o', 's', 'sed', 1), ('o', 't', 'sed', 1), ('g', 'a', 'do', 1), ('g', 'b', 'do', 1), ('g', 'c', 'do', 1), ('g', 'd', 'do', 1), ('g', 'e', 'do', 1), ('g', 'f', 'do', 1), ('g', 'h', 'do', 1), ('g', 'i', 'do', 1), ('g', 'j', 'do', 1), ('g', 'k', 'do', 1), ('g', 'l', 'do', 1), ('g', 'm', 'do', 1), ('g', 'n', 'do', 1), ('g', 'o', 'do', 1), ('g', 'p', 'do', 1), ('g', 'q', 'do', 1), ('g', 'r', 'do', 1), ('g', 's', 'do', 1), ('g', 't', 'do', 1), ('n', 'a', 'eiusmod', 1), ('n', 'b', 'eiusmod', 1), ('n', 'c', 'eiusmod', 1), ('n', 'd', 'eiusmod', 1), ('n', 'e', 'eiusmod', 1), ('n', 'f', 'eiusmod', 1), ('n', 'g', 'eiusmod', 1), ('n', 'h', 'eiusmod', 1), ('n', 'i', 'eiusmod', 1), ('n', 'j', 'eiusmod', 1), ('n', 'k', 'eiusmod', 1), ('n', 'l', 'eiusmod', 1), ('n', 'm', 'eiusmod', 1), ('n', 'o', 'eiusmod', 1), ('n', 'p', 'eiusmod', 1), ('n', 'q', 'eiusmod', 1), ('n', 'r', 'eiusmod', 1), ('n', 's', 'eiusmod', 1), ('n', 't', 'eiusmod', 1), ('h', 'a', 'tempor', 1), ('h', 'b', 'tempor', 1), ('h', 'c', 'tempor', 1), ('h', 'd', 'tempor', 1), ('h', 'e', 'tempor', 1), ('h', 'f', 'tempor', 1), ('h', 'g', 'tempor', 1), ('h', 'i', 'tempor', 1), ('h', 'j', 'tempor', 1), ('h', 'k', 'tempor', 1), ('h', 'l', 'tempor', 1), ('h', 'm', 'tempor', 1), ('h', 'n', 'tempor', 1), ('h', 'o', 'tempor', 1), ('h', 'p', 'tempor', 1), ('h', 'q', 'tempor', 1), ('h', 'r', 'tempor', 1), ('h', 's', 'tempor', 1), ('h', 't', 'tempor', 1), ('m', 'a', 'incididunt', 1), ('m', 'b', 'incididunt', 1), ('m', 'c', 'incididunt', 1), ('m', 'd', 'incididunt', 1), ('m', 'e', 'incididunt', 1), ('m', 'f', 'incididunt', 1), ('m', 'g', 'incididunt', 1), ('m', 'h', 'incididunt', 1), ('m', 'i', 'incididunt', 1), ('m', 'j', 'incididunt', 1), ('m', 'k', 'incididunt', 1), ('m', 'l', 'incididunt', 1), ('m', 'n', 'incididunt', 1), ('m', 'o', 'incididunt', 1), ('m', 'p', 'incididunt', 1), ('m', 'q', 'incididunt', 1), ('m', 'r', 'incididunt', 1), ('m', 's', 'incididunt', 1), ('m', 't', 'incididunt', 1), ('i', 'a', 'ut', 1), ('i', 'b', 'ut', 1), ('i', 'c', 'ut', 1), ('i', 'd', 'ut', 1), ('i', 'e', 'ut', 1), ('i', 'f', 'ut', 1), ('i', 'g', 'ut', 1), ('i', 'h', 'ut', 1), ('l', 'm', 'labore', 1), ('l', 'r', 'labore', 1), ('k', 'f', 'dolore', 1), ('e', 'p', 'adipiscing', 1), ('n', 'f', 'elit', 1), ('p', 'g', 'do', 1), ('c', 'i', 'ut', 1), ('p', 'k', 'dolore', 1)]
+
+*** Ciascuna squadra non deve giocare mai più di due partite consecutive (che siano in o fuori casa)
+
+#+name: clingores-4db-norepeats
+#+begin_src pasp
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,sit).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+1 {gioca(S,A,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(S,C).
+1 {gioca(A,S,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(A,C).
+
+% Squadre diverse della stessa città non possono giocare nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+
+% per ogni squadra e giornata, conta gli avversari che la prima squadra deve affrontare.
+1 { incasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(S,C),gioca(S,A,C,G)}.
+% Ora, la stessa cosa, solo che devi contare i diversi principali
+1 { fuoricasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(A,C),gioca(A,S,C,G)}.
+
+:- squadra(S), giornata(G), incasa(S, G, PiC), fuoricasa(S, G, PfC), N = PiC + PfC, N > 2.
+
+#show gioca/4.
+#+end_src
+
+#+call: analyse_clingo_out(clingores-4db-norepeats)
+
+#+RESULTS:
+#+begin_example
+---- Conteggio partite raggruppate per città ----------
+{'lorem': 38, 'ipsum': 38, 'dolor': 38, 'sit': 38, 'amet': 0, 'consectetur': 19, 'adipiscing': 19, 'elit': 19, 'sed': 19, 'do': 19, 'eiusmod': 19, 'tempor': 19, 'incididunt': 19, 'ut': 19, 'labore': 19, 'et': 19, 'dolore': 19}
+
+---- Conteggio partite raggruppate per giornata ---------
+Day  1:  14 partite	Day  2:   6 partite	Day  3:   7 partite	Day  4:   7 partite	Day  5:  13 partite
+Day  6:   8 partite	Day  7:   9 partite	Day  8:  10 partite	Day  9:   8 partite	Day 10:   6 partite
+Day 11:   4 partite	Day 12:  12 partite	Day 13:  10 partite	Day 14:   6 partite	Day 15:  11 partite
+Day 16:  12 partite	Day 17:   7 partite	Day 18:   5 partite	Day 19:  10 partite	Day 20:  10 partite
+Day 21:  11 partite	Day 22:   8 partite	Day 23:   7 partite	Day 24:   5 partite	Day 25:   7 partite
+Day 26:  10 partite	Day 27:   6 partite	Day 28:  13 partite	Day 29:  14 partite	Day 30:  16 partite
+Day 31:  13 partite	Day 32:  14 partite	Day 33:   6 partite	Day 34:  15 partite	Day 35:  12 partite
+Day 36:  15 partite	Day 37:  14 partite	Day 38:  19 partite
+
+
+Total Games: 380
+#+end_example
+
+#+call: whoplays_in_day(data=clingores-4db-norepeats, day=38)
+
+#+RESULTS:
+: [('f', 'a', 'elit', 38), ('p', 'b', 'adipiscing', 38), ('m', 'b', 'incididunt', 38), ('q', 'c', 'sit', 38), ('m', 'c', 'incididunt', 38), ('k', 'd', 'dolore', 38), ('k', 'f', 'dolore', 38), ('s', 'g', 'ipsum', 38), ('q', 'g', 'sit', 38), ('e', 'h', 'consectetur', 38), ('o', 'i', 'sed', 38), ('r', 'j', 'dolor', 38), ('l', 'j', 'labore', 38), ('e', 'n', 'consectetur', 38), ('l', 'n', 'labore', 38), ('d', 'p', 'sit', 38), ('o', 'r', 'sed', 38), ('h', 't', 'tempor', 38), ('i', 't', 'ut', 38)]
+
+*** La distanza tra una coppia di gare di andata e di ritorno è di almeno 10 giornate.
+
+#+name: clingores-4db-norepeats-sp10
+#+begin_src pasp :tangle yes
+giornata(1..38).
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+citta(lorem;ipsum;dolor;sit;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).
+afferisce(t,lorem).
+afferisce(b,ipsum).
+afferisce(s,ipsum).
+afferisce(c,dolor).
+afferisce(r,dolor).
+afferisce(d,sit).
+afferisce(q,sit).
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+1 {gioca(S,A,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(S,C).
+
+% La distanza tra una coppia di gare di andata e di ritorno è di almeno 10 giornate
+1 { gioca(A,S,C,N):citta(C),giornata(N),R=N-N1,|R| >= 1 } 1 :-
+    citta(C1),giornata(N1),squadra(A;S;S1;A1),
+    S<>A,S1<>A1,S1==A,A1==S,
+    afferisce(A,C),afferisce(S1,C1),
+    gioca(S1,A1,C1,N1).
+
+% Squadre diverse della stessa città non possono giocare nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+
+% per ogni squadra e giornata, conta gli avversari che la prima squadra deve affrontare.
+1 { incasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(S,C),gioca(S,A,C,G)}.
+% Ora, la stessa cosa, solo che devi contare i diversi principali
+1 { fuoricasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(A,C),gioca(A,S,C,G)}.
+
+:- squadra(S), giornata(G), incasa(S, G, PiC), fuoricasa(S, G, PfC), N = PiC + PfC, N > 2.
+
+#show gioca/4.
+#+end_src
+
+#+call: analyse_clingo_out(clingores-4db-norepeats-sp10)
+
+#+RESULTS:
+
+#+call: whoplays_in_day(data=clingores-4db-norepeats-sp10, day=38)
+
+#+RESULTS:

@@ -1,0 +1,46 @@
+% 1) Sono iscritte 20 squadre
+squadra(a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t).
+
+% 2) Il campionato prevede 38 giornate, 19 andata e 19 ritorno non simmetriche.
+giornata(1..38).
+
+% 3) Ogni squadra fa riferimento ad una città che offre la struttura in cui la squadra gioca gli incontri in casa
+citta(lorem;ipsum;dolor;sit;consectetur;adipiscing;elit;sed;do;eiusmod;tempor;incididunt;ut;labore;et;dolore).
+afferisce(a,lorem).         % 5) Due delle 20 squadre fanno riferimento alla medesima città e condividono la struttura di gioco
+afferisce(t,lorem).         % 5) Due delle 20 squadre fanno riferimento alla medesima città e condividono la struttura di gioco
+afferisce(b,ipsum).         % 7) Ci sono due o più derby
+afferisce(s,ipsum).         % 7) Ci sono due o più derby
+afferisce(c,dolor).         % 7) Ci sono due o più derby
+afferisce(r,dolor).         % 7) Ci sono due o più derby
+afferisce(d,sit).           % 7) Ci sono due o più derby
+afferisce(q,sit).           % 7) Ci sono due o più derby
+afferisce(e,consectetur).
+afferisce(p,adipiscing).
+afferisce(f,elit).
+afferisce(o,sed).
+afferisce(g,do).
+afferisce(n,eiusmod).
+afferisce(h,tempor).
+afferisce(m,incididunt).
+afferisce(i,ut).
+afferisce(l,labore).
+afferisce(j,et).
+afferisce(k,dolore).
+
+% 4) ogni squadra deve giocare 2 volte contro tutte le altre squadre, una in andata e una in ritorno (una in casa e una fuori).
+1 {gioca(S,A,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(S,C).
+1 {gioca(A,S,C,N):citta(C),giornata(N)} 1 :- squadra(S),squadra(A),S<>A,afferisce(A,C).
+
+% 5) Squadre diverse della stessa città non possono giocare in casa nella stessa giornata.
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S1,S3,C,N),gioca(S3,S1,C,N).
+:- squadra(S1;S2;S3),giornata(N),afferisce(S1,C),afferisce(S2,C),S1<>S2,gioca(S2,S3,C,N),gioca(S3,S2,C,N).
+
+% per ogni squadra e giornata, conta gli avversari che la prima squadra deve affrontare.
+1 { incasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(S,C),gioca(S,A,C,G)}.
+% Ora, la stessa cosa, solo che devi contare i diversi principali
+1 { fuoricasa(S,G,N) } 1 :- squadra(S),giornata(G),N = #count{A,S:squadra(S),afferisce(A,C),gioca(A,S,C,G)}.
+
+% 6) Ciascuna squadra non deve giocare mai più di due partite consecutive in casa o fuori casa
+:- squadra(S), giornata(G), incasa(S, G, PiC), fuoricasa(S, G, PfC), N = PiC + PfC, N > 2.
+
+#show gioca/4.

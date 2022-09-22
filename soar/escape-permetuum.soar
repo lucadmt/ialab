@@ -1,0 +1,744 @@
+rl -s learning on
+soar max-elaborations 100
+indifferent-selection -g
+indifferent-selection -e 0.1
+
+# Initialization operator proposal
+sp {escape*propose*initialize-escape
+    (state <s> ^superstate nil
+              -^name)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-escape)
+}
+
+# Initialization operator application
+# The window starts with 100% health. ^accuracy &
+# ^impact are meant to be multipliers of the value
+# given from the operator. (strength - impact).
+sp {escape*apply*initialize-escape
+    (state <s> ^operator.name initialize-escape)
+-->
+    (<s> ^name escape
+         ^last-thrown nil
+         ^last-action nil
+         ^window <w>
+         ^cycle 0
+         ^randomness <r>
+         ^item <trunk1> <trunk2> <sprig> <rband> <pebble>)
+    (<w> ^health 100.0)
+    (<trunk1> ^name trunk1 ^accuracy (/ (/ 1 2) 100) ^impact (/ 8 10))
+    (write (crlf) |Trunk #1 spawned.|)
+    (<trunk2> ^name trunk2 ^accuracy (/ (/ 1 2) 100) ^impact (/ 8 10))
+    (write (crlf) |Trunk #2 spawned.|)
+    (<sprig> ^name sprig ^accuracy 1.0 ^impact (/ (/ 1 2) 100))
+    (write (crlf) |Sprig spawned.|)
+    (<rband> ^name rband ^accuracy 1.0 ^impact (/ (/ 1 2) 100))
+    (write (crlf) |Rubber band spawned.|)
+    (<pebble> ^name pebble ^accuracy 1.0 ^impact (/ 45 100))
+    (write (crlf) |Pebble spawned.|)
+    (write (crlf) |Problem Space Initialization complete.|)
+}
+
+# Propose to throw random objects at the window
+# The assumption is that a robot that tries to throw
+# stuff at a window could be accurate, but not really
+# that strong.
+sp {escape*propose*throw
+    (state <s> ^name escape
+               ^window.health <whealth> {<whealth> > 0}
+               ^item (<item> -^name << trunk1 trunk2 weird-tool >>)
+               ^last-thrown <> <item>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name throw
+         ^item <item>
+         ^strength 5
+         ^accuracy 15
+         ^launcher nil)
+}
+
+# Propose to throw a pebble using a slingshot
+sp {escape*propose*slingshot-throw
+    (state <s> ^name escape
+               ^window.health <whealth> {<whealth> > 0}
+               ^item <slingshot>
+               ^item <pebble>)
+    (<slingshot> ^name slingshot ^kind tool)
+    (<pebble> ^name pebble)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name throw
+         ^item <pebble>
+         ^strength 30
+         ^accuracy 70
+         ^launcher <slingshot>)
+}
+
+# Propose to combine two objects
+sp {escape*propose*combine
+    (state <s> ^name escape
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>})
+    (state <s> -^item (^item1 <item1> ^item2 <item2>))
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name combine
+         ^item1 <item1>
+         ^item2 <item2>
+         ^result <result>)
+}
+
+# Propose to destroy previously combined objects
+sp {escape*propose*destroy
+    (state <s> ^name escape
+               ^item (<tool> ^kind tool
+                             ^item1 <item1>
+                             ^item2 <item2>))
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name destroy
+         ^item1 <item1>
+         ^item2 <item2>
+         ^tool <tool>)
+}
+
+# If you have a ladder and you broke the window climb up and get out
+sp {escape*propose*climb-ladder
+    (state <s> ^name escape
+               ^item (<ladder> ^name ladder ^kind tool)
+               ^window.health <whealth> {<whealth> <= 0})
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name climb ^item <ladder>)
+}
+
+################
+# RL Operators
+################
+
+# Make throwing numeric indifferent
+sp {escape*compare*throw*indifferent
+   (state <s> ^operator <o> +)
+   (<o> ^name throw)
+-->
+   (<s> ^operator <o> = 0)
+}
+
+# Make combining numeric indifferent
+sp {escape*compare*combine*indifferent
+   (state <s> ^operator <o> +)
+   (<o> ^name combine)
+-->
+   (<s> ^operator <o> = 0)
+}
+
+# Make destroying numeric indifferent
+sp {escape*compare*destroy*indifferent
+   (state <s> ^operator <o> +)
+   (<o> ^name destroy)
+-->
+   (<s> ^operator <o> = 0)
+}
+
+# Make climbing numeric indifferent
+sp {escape*compare*climb*indifferent
+   (state <s> ^operator <o> +)
+   (<o> ^name climb)
+-->
+   (<s> ^operator <o> = 0)
+}
+
+########################################
+# Elaboration Rules
+########################################
+
+# Augment state with a random value
+sp {escape*elaborate*randomness
+    (state <s> ^name escape
+               ^randomness <r>
+               ^cycle <c>)
+-->
+    (<r> ^value (rand-float 100))
+}
+
+#######################################
+# Elaboration Rules: Rewards
+#######################################
+
+#### Rewards for item creation
+
+# Elaborate reward for the creation of a slingshot
+#sp {escape*elaborate*reward*slingshot
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^item ( ^name slingshot ))
+#-->
+#    (<r> ^reward.value 1.0)
+#}
+#
+## Elaborate reward for the creation of a ladder
+#sp {escape*elaborate*reward*ladder
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^item ( ^name ladder ))
+#-->
+#    (<r> ^reward.value 1.0)
+#}
+#
+## Elaborate reward for the creation of a weird-tool
+#sp {escape*elaborate*reward*weird-tool
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^item ( ^name <> slingshot ladder))
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 2)))
+#}
+#
+# Elaborate reward for the creation of a weirder tool
+#sp {escape*elaborate*reward*weirder-tool1
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^item ( ^name weird-tool ^kind tool ^item1.kind tool))
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 2)))
+#}
+#
+## Elaborate reward for the creation of a weirder tool
+#sp {escape*elaborate*reward*weirder-tool2
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^item ( ^name weird-tool ^kind tool ^item2.kind tool))
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 2)))
+#}
+
+#### Rewards for action patterns
+## This rules are needed to incentivize different actions
+## and disincentivize repeating actions.
+#sp {escape*elaborate*reward*same-action
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^last-action.name <lo>
+#               ^operator.name <lo>
+#               ^reward-link <r>)
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 10)))
+#}
+#
+#sp {escape*elaborate*reward*different-action
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^last-action.name <lo>
+#               ^operator.name <o> {<o> <> <lo>}
+#               ^reward-link <r>)
+#-->
+#    (<r> ^reward.value (/ 1 10))
+#}
+
+#### Rewards for throwing objects
+
+# Elaborate reward for throwing items
+#sp {escape*elaborate*reward*last-thrown-random
+#    (state <s> ^name escape
+#               ^cycle <c>
+#               ^reward-link <r>
+#               ^last-thrown ( ^name <> pebble ^launcher nil))
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 3)))
+#}
+
+# Elaborate reward for throwing items
+#sp {escape*elaborate*reward*last-thrown-pebble
+#    (state <s> ^name escape
+#               ^reward-link <r>
+#               ^last-thrown ( ^name pebble ^launcher <l>))
+#-->
+#    (<r> ^reward.value 0)
+#}
+
+#### Rewards for object destruction
+
+# Reward for destroying slingshot/ladder (punishment)
+#sp {escape*elaborate*reward*last-action*destroy*slingshot-ladder
+#    (state <s> ^name escape
+#               ^reward-link <r>
+#               ^last-action ( ^name destroy ^tool.name << slingshot ladder >>))
+#-->
+#    (<r> ^reward.value (- 0 (/ 1 2)))
+#}
+
+# Reward for destroying weird tools (reward)
+#sp {escape*elaborate*reward*last-action*destroy*weird-tools
+#    (state <s> ^name escape
+#               ^reward-link <r>
+#               ^last-action ( ^name destroy ^tool.name weird-tool))
+#-->
+#    (<r> ^reward.value (/ 1 2))
+#}
+
+###############################################
+# Application Rules
+###############################################
+
+# Accuracy >= Randomness: The bot hits the traget
+sp {escape*apply*throw-success
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <op>
+               ^item <item>
+               ^window <window>
+               ^randomness <r>
+               ^reward-link <rl>
+               ^last-thrown <last-thrown>)
+
+    (<r> ^value <randv>)
+
+    (<window> ^health <whealth> {<whealth> >= 0})
+
+    (<item> ^name <item-name>
+            ^accuracy <item-accuracy>
+            ^impact <item-impact>)
+
+    (<op> ^name throw
+          ^item <item>
+          ^launcher <launcher>
+          ^strength <op-strength>
+          ^accuracy >= <randv>)
+-->
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <op>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<rl> ^reward.value (ifeq <launcher> nil (- 0 (- 100 (- <whealth> (* <item-impact> <op-strength>))))
+                                             (+ 0 (- 100 (- <whealth> (* <item-impact> <op-strength>))))))
+
+    (<s> ^last-thrown <last-thrown> -)
+    (<s> ^last-thrown <item>)
+    (<window> ^health <whealth> -)
+    (<window> ^health (- <whealth> (* <item-impact> <op-strength>)))
+
+    (write (crlf) |Throwing | <item-name> | with | (ifeq <launcher> nil nothing slingshot) | @window... |)
+    (write (crlf) |Window has now | (- <whealth> (* <item-impact> <op-strength>)) | health.| (crlf))
+}
+
+# Randomness > Accuracy: The bot misses
+sp {escape*apply*throw-miss
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <op>
+               ^item <item>
+               ^window <window>
+               ^randomness <r>
+               ^last-thrown <last-thrown>
+               ^reward-link <rl>)
+
+    (<r> ^value <randv>)
+
+    (<window> ^health <whealth>)
+
+    (<item> ^name <item-name>
+            ^accuracy <item-accuracy>
+            ^impact <item-impact>)
+
+    (<op> ^name throw
+          ^item <item>
+          ^strength <op-strength>
+          ^launcher <launcher>
+          ^accuracy <op-accuracy> < <randv>)
+-->
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <op>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^last-thrown <last-thrown> -)
+    (<s> ^last-thrown <item>)
+
+    (<window> ^health <whealth>)
+
+    (<rl> ^reward.value (ifeq <launcher> nil (- 0 (/ 1 2)) (/ 1 2)))
+
+    (write (crlf) |Throwing | <item-name> | with | (ifeq <launcher> nil nothing slingshot) | @window... |)
+    (write (crlf)  |Bot missed the window.| (crlf))
+}
+
+# Combine objects into a sling, rewarded.
+sp {escape*apply*combine-slingshot
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << sprig rband >>)
+         ^item2 (<item2> ^name << rband sprig >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value 1)
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name slingshot
+           ^kind tool
+           ^launcher nil
+           ^accuracy 1.0
+           ^impact (/ 1 2)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a slingshot.| (crlf))
+}
+
+# Combine objects into a ladder, rewarded.
+sp {escape*apply*combine-ladder
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << trunk1 trunk2 >>)
+         ^item2 (<item2> ^name << trunk2 trunk1 >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value 1)
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name ladder
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 1000)
+           ^impact (/ 1 10)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a ladder.| (crlf))
+}
+
+# Combine objects into a weird-tool, punished.
+sp {escape*apply*combine*weird-tool-1
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << sprig rband >>)
+         ^item2 (<item2> ^name << trunk1 trunk2 pebble >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 5)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a weird tool (1).| (crlf))
+}
+
+# Combine objects into a weird-tool, punished.
+sp {escape*apply*combine*weird-tool-2
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << trunk1 trunk2 pebble >>)
+         ^item2 (<item2> ^name << sprig rband >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 5)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a weird tool (2).| (crlf))
+}
+
+# Combine objects into a weird-tool, punished.
+sp {escape*apply*combine*weird-tool-rest-1
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << pebble >>)
+         ^item2 (<item2> ^name << trunk1 trunk2 >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 5)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a weird tool (3.1).| (crlf))
+}
+
+# Combine objects into a weird-tool, punished.
+sp {escape*apply*combine*weird-tool-rest-2
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << trunk1 trunk2 >>)
+         ^item2 (<item2> ^name << pebble >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 5)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create a weird tool (3.2).| (crlf))
+}
+
+sp {escape*apply*combine*weirder-tool
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << weird-tool ladder slingshot >>)
+         ^item2 (<item2> ^name << weird-tool ladder slingshot pebble rband sprig trunk1 trunk2 >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 2)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create an even weirder tool (4.1).| (crlf))
+}
+
+sp {escape*apply*combine*weirder-tool-2
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^operator <o>
+               ^reward-link <rl>
+               ^item <item1>
+               ^item <item2> {<item1> <> <item2>}
+               -^item (^kind tool ^item1 <item1> ^item2 <item2>)
+               -^item (^kind tool ^item1 <item2> ^item2 <item1>))
+
+    (<o> ^name combine
+         ^item1 (<item1> ^name << weird-tool ladder slingshot pebble rband sprig trunk1 trunk2 >>)
+         ^item2 (<item2> ^name << weird-tool ladder slingshot >>)
+         ^result <res>)
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value (- 0 (/ 1 2)))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <item1> -)
+    (<s> ^item <item2> -)
+    (<s> ^item <res>)
+
+    (<res> ^name weird-tool
+           ^kind tool
+           ^launcher nil
+           ^accuracy (/ 1 100)
+           ^impact (/ 1 100)
+           ^item1 <item1>
+           ^item2 <item2>)
+    (write (crlf)  |Bot combined | <item1> | and | <item2> | to create an even weirder tool (4.2).| (crlf))
+}
+
+sp {escape*apply*destroy
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^reward-link <rl>
+               ^operator (<o> ^name destroy
+                              ^tool (<tool> ^name <tname>)
+                              ^item1 (<item1> ^name <i1name>)
+                              ^item2 (<item2> ^name <i2name>))
+               ^item (<tool> ^kind tool ^item1 <item1> ^item2 <item2>))
+-->
+   (<rl> ^reward <rr>)
+   (<rr> ^action <o> ^value (ifeq <tname> slingshot (- 0 (/ 11 10)) (ifeq <tname> ladder (- 0 (/ 11 10)) (/ 1 5))))
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <o>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+
+    (<s> ^item <tool> -)
+    (<s> ^item <item1>)
+    (<s> ^item <item2>)
+    (write (crlf)  |Bot destroyed | <tname> | and obtained: | <i1name> | and | <i2name> (crlf))
+}
+
+sp {escape*apply*climb-ladder
+    (state <s> ^name escape
+               ^cycle <c>
+               ^last-action <la>
+               ^reward-link <rl>
+               ^item (<ladder> ^name ladder ^kind tool)
+               ^window (<w> ^health <whealth> {<whealth> <= 0})
+               ^operator (<op> ^name climb
+                               ^item.name ladder))
+-->
+    (<rl> ^reward <rr>)
+    (<rr> ^value 10)
+
+    (<s> ^last-action <la> -)
+    (<s> ^last-action <op>)
+
+    (<s> ^cycle <c> -)
+    (<s> ^cycle (+ <c> 1))
+    (write (crlf) (crlf) |Bot climbed his way to freedom, and escaped successfully.| (crlf) (crlf))
+    #(halt)
+    (<s> ^window <w> -)
+    (<s> ^window.health 100)
+}
